@@ -1,218 +1,116 @@
-# Weather API
+# Angular Weather Frontend
 
-Flask API for fetching current weather by city. The API receives a city name from the Angular frontend, finds the city coordinates with Open-Meteo Geocoding, fetches current weather from Open-Meteo Forecast, and returns a small JSON response for the UI.
+Modern Angular weather UI for a Python Flask/FastAPI backend.
 
-## Architecture
+## API Contract
 
-```text
-Angular Frontend
-      |
-      v
-Flask API: api.py
-      |
-      v
-Weather logic: weather.py
-      |
-      v
-Open-Meteo Geocoding API + Forecast API
-```
-
-## Files
+The frontend calls:
 
 ```text
-Weather/
-  app.py                  # Vercel Flask entrypoint
-  api.py                  # Flask API server
-  weather.py              # Weather lookup functions and CLI app
-  requirements.txt        # Python dependencies
-  weather-frontend/       # Angular frontend
-  templates/              # Older HTML template
+GET http://127.0.0.1:5050/weather?city=London&unit=celsius
 ```
 
-## Setup
-
-Install Python dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-If `python` does not point to your installed Python on Windows, use the full Python path or configure your IDE interpreter.
-
-## Run The API
-
-Start the Flask server:
-
-```bash
-python api.py
-```
-
-The API runs at:
-
-```text
-http://127.0.0.1:5050
-```
-
-## Deploying The API To Vercel
-
-Vercel looks for Flask apps in default files such as `app.py`, `index.py`, or `server.py`.
-This project keeps the real API in `api.py`, so `app.py` imports and exposes the same Flask
-application for Vercel:
-
-```python
-from api import app
-```
-
-Deploy the API from the repository root. Vercel should detect `app.py` as the Flask entrypoint.
-
-If Vercel asks for settings, use:
-
-```text
-Framework Preset: Flask
-Root Directory: ./
-Build Command: empty/default
-Output Directory: empty/default
-Install Command: pip install -r requirements.txt
-```
-
-Set this environment variable in the Vercel API project:
-
-```text
-CORS_ORIGINS=https://YOUR_FRONTEND_DEPLOYMENT.vercel.app,http://localhost:4300,http://127.0.0.1:4300
-```
-
-After deployment, test:
-
-```text
-https://YOUR_API_DEPLOYMENT.vercel.app/weather?city=London&unit=celsius
-```
-
-## Endpoints
-
-### Health Check
-
-```http
-GET /
-```
-
-Example response:
-
-```json
-{
-  "message": "Weather API is running",
-  "weather_endpoint": "/weather?city=London&unit=celsius"
-}
-```
-
-### Get Weather
-
-```http
-GET /weather?city=London&unit=celsius
-```
-
-Query parameters:
-
-| Parameter | Required | Values | Description |
-| --- | --- | --- | --- |
-| `city` | Yes | Any city name | City to search for |
-| `unit` | No | `celsius`, `fahrenheit` | Temperature unit. Defaults to `celsius` |
-
-Example request:
-
-```text
-http://127.0.0.1:5050/weather?city=London&unit=celsius
-```
-
-Example success response:
+Expected response:
 
 ```json
 {
   "city": "London",
-  "temperature": 23.2,
-  "windspeed": 11.2,
-  "condition": "Clear sky",
-  "weathercode": 0
+  "temperature": 23,
+  "windspeed": 12,
+  "condition": "Partly cloudy",
+  "weathercode": 2
 }
 ```
 
-## How It Works
+Change the backend URL in `src/environments/environment.ts` if your API runs elsewhere.
 
-1. The frontend calls `/weather` with a city and temperature unit.
-2. `api.py` validates the query parameters.
-3. `get_coordinates(city)` in `weather.py` calls Open-Meteo Geocoding.
-4. `get_weather(lat, lon, unit)` calls Open-Meteo Forecast using the returned coordinates.
-5. The API maps the Open-Meteo weather code to readable text using `WEATHER_CODES`.
-6. Flask returns JSON to the Angular frontend.
-
-## Error Responses
-
-Missing city:
-
-```json
-{
-  "error": "Bad Request",
-  "message": "City is required"
-}
-```
-
-Invalid unit:
-
-```json
-{
-  "error": "Bad Request",
-  "message": "Unit must be celsius or fahrenheit"
-}
-```
-
-Unknown city:
-
-```json
-{
-  "error": "Not Found",
-  "message": "Could not find city 'ExampleCity'"
-}
-```
-
-Unknown endpoint:
-
-```json
-{
-  "error": "Not Found",
-  "message": "Endpoint not found"
-}
-```
-
-## Frontend Connection
-
-The Angular frontend is configured to call:
+## Project Structure
 
 ```text
-http://127.0.0.1:5050
+src/
+  app/
+    core/
+      models/weather.model.ts
+      services/weather.service.ts
+      services/recent-searches.service.ts
+    features/
+      search/
+      weather/
+    shared/
+      loading-spinner/
+    app.config.ts
+    app.html
+    app.scss
+    app.ts
+  environments/
+    environment.ts
+    environment.development.ts
 ```
 
-The setting is in:
+## Commands
 
-```text
-weather-frontend/src/environments/environment.ts
-weather-frontend/src/environments/environment.development.ts
-```
-
-Run the frontend:
+Create a fresh Angular app:
 
 ```bash
-cd weather-frontend
-npm install
-npm start -- --host 127.0.0.1 --port 4300
+ng new weather-frontend --standalone --style=scss --routing=false
 ```
 
-Open:
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the app:
+
+```bash
+npm start
+```
+
+Open `http://localhost:4200`.
+
+## Deploying The Frontend To Vercel
+
+Deploy the Angular frontend as a separate Vercel project from the backend API.
+
+Recommended Vercel settings:
 
 ```text
-http://127.0.0.1:4300
+Root Directory: weather-frontend
+Framework Preset: Angular
+Build Command: npm run build
+Output Directory: dist/weather-frontend/browser
+Install Command: npm install
 ```
 
-## Notes
+Before deploying, update `src/environments/environment.ts` and
+`src/environments/environment.development.ts` so `apiUrl` points to your deployed API URL:
 
-- The API uses Open-Meteo, which does not require an API key.
-- CORS is enabled for `http://127.0.0.1:4300` and `http://localhost:4300`.
-- `weather.py` can still run as a terminal app with `python weather.py`.
+```ts
+export const environment = {
+  production: false,
+  apiUrl: 'https://YOUR_API_DEPLOYMENT.vercel.app',
+};
+```
+
+Build for production:
+
+```bash
+npm run build
+```
+
+Run tests:
+
+```bash
+npm test
+```
+
+## Features
+
+- Standalone Angular components with SCSS.
+- Reactive city search with recent searches stored in `localStorage`.
+- `HttpClient` API integration for `/weather`.
+- Celsius/Fahrenheit unit toggle.
+- Weather code mapping for clear, cloudy, rain, thunderstorm, snow, and fog.
+- Glassmorphism card, animated gradients, loading spinner, error state, and responsive mobile-first layout.
+- Light/dark visual mode toggle.

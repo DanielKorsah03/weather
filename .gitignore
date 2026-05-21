@@ -1,49 +1,44 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
+# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# Virtual environments
-.venv/
-venv/
-env/
-ENV/
+# Compiled output
+/dist
+/tmp
+/out-tsc
+/bazel-out
 
-# Local configuration and secrets
-.env
-.env.*
-!.env.example
-*.pem
-*.key
-*.crt
-*.p12
-*.pfx
+# Node
+/node_modules
+npm-debug.log
+yarn-error.log
 
-# Angular / Node
-node_modules/
-dist/
-tmp/
-out-tsc/
-.angular/cache/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# IDEs and editors
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 
-# IDE and OS files
+# Visual Studio Code
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-.idea/
-.history/
+!.vscode/mcp.json
+.history/*
+
+# Miscellaneous
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/
+
+# System files
 .DS_Store
 Thumbs.db
-
-# Local project tooling
-.sixth/
